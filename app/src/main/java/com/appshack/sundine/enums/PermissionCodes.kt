@@ -7,5 +7,6 @@ package com.appshack.sundine.enums
  */
 enum class PermissionCodes(val id: Int) {
     LOCATION_PERMISSION(1001),
+    CONNECTION_FAILURE_RESOLUTION_REQUEST(9901),
     OPEN_SETTINGS( 999)
 }
