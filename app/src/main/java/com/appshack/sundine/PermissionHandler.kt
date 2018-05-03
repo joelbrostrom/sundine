@@ -61,7 +61,6 @@ class PermissionHandler(private val activity: Activity,private val requiredPermi
                     activity.startActivityForResult(intent, PermissionCodes.OPEN_SETTINGS.id)
                     dialog.cancel()
                 }
-
                 .setNegativeButton(negativeButton) { dialog, which -> dialog.cancel() }
                 .show()
 

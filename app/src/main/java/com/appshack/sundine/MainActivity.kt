@@ -7,18 +7,19 @@ import android.support.v4.app.FragmentActivity
 import android.support.v4.content.PermissionChecker
 import android.util.Log
 import com.appshack.sundine.enums.PermissionCodes
+import com.appshack.sundine.extensions.debugTrace
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.location.*
+import com.google.android.gms.location.places.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapFragment
-import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.tasks.OnCompleteListener
 
-class MainActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, OnMapReadyCallback {
-
-    private val TAG = "@Dev ${javaClass.simpleName}"
+class MainActivity : FragmentActivity(), MapInterface {
 
     /**
      *  gMap: The visible map you see
@@ -31,61 +32,31 @@ class MainActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks, Go
     private var isResumed: Boolean = false
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
+    private lateinit var mPlaceDetectionClient: PlaceDetectionClient
     private lateinit var mGoogleApiClient: GoogleApiClient
     private lateinit var mLocationRequest: LocationRequest
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        val mMapFragment = fragmentManager.findFragmentById(R.id.google_map_fragment) as MapFragment
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        locationCallback = (object : LocationCallback() {
-            override fun onLocationResult(p0: LocationResult?) {
-                super.onLocationResult(p0)
-                Log.i(TAG, "LocationCallbackResult: $p0")
-            }
-        })
+        mPlaceDetectionClient = Places.getPlaceDetectionClient(this)
 
-        mGoogleApiClient = GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build()
+        locationCallback = locationResultCallback
 
-        mLocationRequest = LocationRequest.create()
-                .setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY)
-                .setInterval(10 * 1000)        // 10 seconds, in milliseconds
-                .setFastestInterval(1 * 1000)  // 1 second, in milliseconds
+        mGoogleApiClient = mClient
+
+        mLocationRequest = mIntervalFast
 
         /**
          * Call getMapAsync to get a google map.
          * This call will return a GoogleMap in onMapReady, which we implement from OnMapReadyCallback
          */
-        val mapFragment = fragmentManager.findFragmentById(R.id.google_map_fragment) as MapFragment
-        mapFragment.getMapAsync(this)
-
-    }
-
-    /**
-     * We check permission to fetch location via our custom permission handler and pass a function
-     * as the callback parameter
-     * If we have/get permission we save the new googleMap and set isMyLocationEnabled to true,
-     * enabling tracking
-     */
-    override fun onMapReady(googleMap: GoogleMap?) {
-
-        val permissionHandler = PermissionHandler(this, listOf(Manifest.permission.ACCESS_FINE_LOCATION), {
-            if (PermissionChecker.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PermissionChecker.PERMISSION_GRANTED) {
-                googleMap?.let {
-                    gMap = googleMap
-                    gMap.isMyLocationEnabled = true
-                }
-            }
-        })
-
-        permissionHandler.checkPermission()
+        mMapFragment.getMapAsync(this)
 
     }
 
@@ -114,6 +85,55 @@ class MainActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks, Go
         }
     }
 
+    private fun getNearbyPlaces() {
+
+        if (PermissionChecker.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PermissionChecker.PERMISSION_GRANTED) {
+            val placeResults = mPlaceDetectionClient.getCurrentPlace(null)
+            placeResults.addOnCompleteListener(placeResultCompleteListener)
+        }
+    }
+
+    private fun addMarkers(places: List<PlaceLikelihood>) {
+        places.forEach {
+            gMap.addMarker(MarkerOptions()
+                    .title(it.place.name.toString())
+                    .position(it.place.latLng))
+        }
+    }
+
+    private fun filterFoodPlaces(likelyPlaces: PlaceLikelihoodBufferResponse): List<PlaceLikelihood> {
+        return likelyPlaces.filter {
+            it.place.placeTypes.any {
+                it == Place.TYPE_RESTAURANT ||
+                        it == Place.TYPE_CAFE ||
+                        it == Place.TYPE_BAR
+            }
+        }
+    }
+
+    /**
+     * We check permission to fetch location via our custom permission handler and pass a function
+     * as the callback parameter
+     * If we have/get permission we save the new googleMap and set isMyLocationEnabled to true,
+     * enabling tracking
+     */
+    override fun onMapReady(googleMap: GoogleMap?) {
+
+        val permissionHandler = PermissionHandler(this, listOf(Manifest.permission.ACCESS_FINE_LOCATION), {
+            if (PermissionChecker.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PermissionChecker.PERMISSION_GRANTED) {
+                googleMap?.let {
+                    gMap = googleMap
+                    gMap.isMyLocationEnabled = true
+
+                }
+            }
+        })
+
+        permissionHandler.checkPermission()
+
+    }
+
     override fun onLocationChanged(p0: Location?) {
         handleNewLocation(p0)
     }
@@ -128,11 +148,12 @@ class MainActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks, Go
             if (isResumed) {
                 val latLng = LatLng(it.latitude, it.longitude)
                 val cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 14f)
+                getNearbyPlaces()
                 gMap.animateCamera(cameraUpdate)
                 isResumed = false
             }
         }
-        Log.d(TAG, location.toString())
+        Log.d(debugTrace(), location.toString())
     }
 
     /**
@@ -145,34 +166,65 @@ class MainActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks, Go
 
             if (PermissionChecker.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PermissionChecker.PERMISSION_GRANTED) {
 
-                fusedLocationClient.requestLocationUpdates(mLocationRequest, (object : LocationCallback() {
+                val mLastLocation = fusedLocationClient.lastLocation
+                mLastLocation.addOnCompleteListener { handleNewLocation(it.result) }
 
-                    override fun onLocationResult(p0: LocationResult?) {
-                        super.onLocationResult(p0)
-                        p0?.let {
-                            handleNewLocation(it.lastLocation)
-                        }
-                    }
-
-                }), null)
-
+                fusedLocationClient.requestLocationUpdates(mLocationRequest, newLocationCallback, null)
 
             }
         }).checkPermission()
 
     }
 
-    override fun onConnectionSuspended(p0: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
     override fun onConnectionFailed(p0: ConnectionResult) {
         if (p0.hasResolution()) {
             p0.startResolutionForResult(this, PermissionCodes.CONNECTION_FAILURE_RESOLUTION_REQUEST.id)
         } else {
-            Log.i(TAG, "Location services connection failed with code ${p0.errorMessage}")
+            Log.i(debugTrace(), "Location services connection failed with code ${p0.errorMessage}")
         }
 
     }
+
+    private val newLocationCallback: LocationCallback = object : LocationCallback() {
+
+        override fun onLocationResult(p0: LocationResult?) {
+            super.onLocationResult(p0)
+            p0?.let {
+                handleNewLocation(it.lastLocation)
+            }
+        }
+
+    }
+
+    private val placeResultCompleteListener = OnCompleteListener<PlaceLikelihoodBufferResponse> {
+
+        val likelyPlaces: PlaceLikelihoodBufferResponse = it.result
+        val foodPlaces = filterFoodPlaces(likelyPlaces)
+
+        addMarkers(foodPlaces)
+        //foodPlaces.forEach { Log.i(debugTrace(), "[Place/Likelihood/Types]:   ${it.place.name} : ${it.likelihood} : ${it.place.placeTypes}\n") }
+        likelyPlaces.forEach { Log.i(debugTrace(), "[Place/Likelihood/Types]:   ${it.place.name} : ${it.likelihood} : ${it.place.placeTypes}") }
+        likelyPlaces.release()
+    }
+
+    private val locationResultCallback: LocationCallback = object : LocationCallback() {
+        override fun onLocationResult(p0: LocationResult?) {
+            super.onLocationResult(p0)
+            Log.i(debugTrace(), "LocationCallbackResult: $p0")
+        }
+    }
+
+    private var mClient: GoogleApiClient
+        get() = GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build()
+        set(value) = Unit
+
+    private val mIntervalFast = LocationRequest.create()
+            .setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY)
+            .setInterval(10 * 1000)        // 10 seconds, in milliseconds
+            .setFastestInterval(1 * 1000)  // 1 second, in milliseconds
 
 }

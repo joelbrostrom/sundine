@@ -25,7 +25,7 @@ class LoginActivity : Activity() {
         }
     }
 
-    private fun validateCredentials(){
+    private fun validateCredentials() {
 
         if (email_input_field.text.toString() == "user@email.com"
             && password_input_field.text.toString() == "12345") {
@@ -38,4 +38,5 @@ class LoginActivity : Activity() {
             Toast.makeText(this, "No match found", Toast.LENGTH_LONG).show()
         }
     }
+
 }

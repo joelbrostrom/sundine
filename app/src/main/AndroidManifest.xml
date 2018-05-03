@@ -21,9 +21,12 @@
         </activity>
         <activity android:name=".MainActivity" />
 
+
         <meta-data
-            android:name="com.google.android.maps.v2.API_KEY"
-            android:value="AIzaSyDBK8YmHzjlD13Io4Z0loqu_cq0GzJloeI" />
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyASUpzJqubfFWWvDO6BauGDODCs91etUfQ" />
+
+        <!--AIzaSyASUpzJqubfFWWvDO6BauGDODCs91etUfQ-->
 
         <meta-data
             android:name="com.google.android.gms.version"
