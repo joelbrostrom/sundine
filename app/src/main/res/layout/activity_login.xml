@@ -57,5 +57,16 @@
         android:text="Login"
         android:textStyle="bold" />
 
+    <Button
+        android:id="@+id/canvas_test_view"
+        android:layout_width="124dp"
+        android:layout_height="@dimen/grid_6x"
+        android:layout_alignParentBottom="true"
+        android:layout_toEndOf="@id/login_button"
+        android:layout_marginBottom="@dimen/grid_10x"
+        android:background="@drawable/background_rounded_white"
+        android:text="Canvas"
+        android:textStyle="bold" />
+
 
 </RelativeLayout>

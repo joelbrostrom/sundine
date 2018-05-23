@@ -1,4 +1,4 @@
-package com.appshack.sundine
+package com.appshack.sundine.main
 
 import android.Manifest
 import android.location.Location
@@ -6,6 +6,9 @@ import android.os.Bundle
 import android.support.v4.app.FragmentActivity
 import android.support.v4.content.PermissionChecker
 import android.util.Log
+import com.appshack.sundine.PermissionHandler
+import com.appshack.sundine.R
+import com.appshack.sundine.interfaces.MapInterface
 import com.appshack.sundine.enums.PermissionCodes
 import com.appshack.sundine.extensions.debugTrace
 import com.google.android.gms.common.ConnectionResult
@@ -60,11 +63,6 @@ class MainActivity : FragmentActivity(), MapInterface {
 
     }
 
-    /**
-     * Set isResumed to true
-     * Activates "go to user location" only the first time the app is resumed
-     * Connect the api client to te google services
-     */
     override fun onResume() {
         super.onResume()
         isResumed = true
@@ -72,10 +70,6 @@ class MainActivity : FragmentActivity(), MapInterface {
         mGoogleApiClient.connect()
     }
 
-    /**
-     * If connected when the app pauses (or are terminated) we disconnect and stop listening for
-     * location updates
-     */
     override fun onPause() {
         super.onPause()
 
@@ -112,12 +106,6 @@ class MainActivity : FragmentActivity(), MapInterface {
         }
     }
 
-    /**
-     * We check permission to fetch location via our custom permission handler and pass a function
-     * as the callback parameter
-     * If we have/get permission we save the new googleMap and set isMyLocationEnabled to true,
-     * enabling tracking
-     */
     override fun onMapReady(googleMap: GoogleMap?) {
 
         val permissionHandler = PermissionHandler(this, listOf(Manifest.permission.ACCESS_FINE_LOCATION), {
@@ -156,11 +144,6 @@ class MainActivity : FragmentActivity(), MapInterface {
         Log.d(debugTrace(), location.toString())
     }
 
-    /**
-     * Create a JoelPermissionHandler (TM) and pass a callback that set a request for location
-     * updates and in turn a callback overriding onLocationResult which pass the current location
-     * along to handleNewLocation
-     */
     override fun onConnected(p0: Bundle?) {
         PermissionHandler(this, listOf(Manifest.permission.ACCESS_FINE_LOCATION), {
 

@@ -4,6 +4,8 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
+import com.appshack.sundine.main.MainActivity
+import com.appshack.sundine.suncanvas.SunCanvasActivity
 import kotlinx.android.synthetic.main.activity_login.*
 
 
@@ -16,13 +18,20 @@ class LoginActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
-        setupClickable()
+        setupClickListeners()
     }
 
-    private fun setupClickable() {
+    private fun setupClickListeners() {
         login_button.setOnClickListener {
             validateCredentials()
         }
+
+        canvas_test_view.setOnClickListener {
+            val intent = Intent(this, SunCanvasActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
+
     }
 
     private fun validateCredentials() {

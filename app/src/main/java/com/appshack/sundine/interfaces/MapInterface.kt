@@ -1,4 +1,4 @@
-package com.appshack.sundine
+package com.appshack.sundine.interfaces
 
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.location.LocationListener
@@ -14,8 +14,6 @@ interface MapInterface: GoogleApiClient.ConnectionCallbacks,
         LocationListener,
         OnMapReadyCallback {
 
-    override fun onConnectionSuspended(p0: Int) {
-        TODO("not implemented") //Not needed for current functionality
-    }
+    override fun onConnectionSuspended(p0: Int) {}
 
 }
