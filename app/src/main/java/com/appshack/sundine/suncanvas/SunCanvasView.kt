@@ -20,7 +20,7 @@ class SunCanvasView(context: Context, attributeSet: AttributeSet) : View(context
 
     private var currentSunriseAngle = 270f
     private var currentSunsetSweepingAngle = 90f
-    val paintFactory = PaintFactory(context)
+    private val paintFactory = PaintFactory(context)
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
@@ -58,7 +58,7 @@ class SunCanvasView(context: Context, attributeSet: AttributeSet) : View(context
         currentSunsetSweepingAngle = sunPathDataModel.sunsetAngle -
                 sunPathDataModel.sunriseAngle
 
-        currentSunPathRectF.set(0f, 0f, 1000f, 1000f)
+        currentSunPathRectF.set(0f, 00f, 1000f, 1000f)
     }
 
     private fun adjustOrigoAngleToTop(angle: Float): Float {

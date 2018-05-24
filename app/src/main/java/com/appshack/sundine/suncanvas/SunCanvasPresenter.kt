@@ -40,9 +40,28 @@ class SunCanvasPresenter(val viewController: SunCanvasMVP.View) : SunCanvasMVP.P
                 17.6403475,
                 ESTIMATED_DELTA_T)
 
+        val azimuthZenithAngleRise = Grena3.calculateSolarPosition(sunRiseSetTransit[0],
+                59.8599454,
+                17.6403475,
+                ESTIMATED_DELTA_T)
+
+        val azimuthZenithAngleNoon = Grena3.calculateSolarPosition(sunRiseSetTransit[1],
+                59.8599454,
+                17.6403475,
+                ESTIMATED_DELTA_T)
+
+        val azimuthZenithAngleSet = Grena3.calculateSolarPosition(sunRiseSetTransit[2],
+                59.8599454,
+                17.6403475,
+                ESTIMATED_DELTA_T)
 
         Log.d("@dev", azimuthZenithAngle.toString())
-        Log.d("@dev", "sunriseTime: ${sunRiseSetTransit.first().time}")
+        Log.d("@dev", "sunriseTime: ${sunRiseSetTransit[0].time}")
+        Log.d("@dev", "solarNoon: ${sunRiseSetTransit[1].time}")
+        Log.d("@dev", "sunsetTime: ${sunRiseSetTransit[2].time}")
+        Log.d("@dev solarrise:", azimuthZenithAngleRise.toString())
+        Log.d("@dev solarNoon:", azimuthZenithAngleNoon.toString())
+        Log.d("@dev solarset:", azimuthZenithAngleSet.toString())
        // Log.d("@dev", sunRiseSetTransit.contentToString())
     }
 
@@ -79,11 +98,11 @@ class SunCanvasPresenter(val viewController: SunCanvasMVP.View) : SunCanvasMVP.P
             convertISOtoShortTimeString(it)
             getAngleForPath(it)
 
-            Log.d("@dev", "sunrise: ${it.sunriseTime}   sunset: ${it.sunsetTime}   " +
-                    "noonAngle: ${it.noonTime}")
+            Log.d("@dev", "sunriseT: ${it.sunriseTime}   sunsetT: ${it.sunsetTime}   " +
+                    "noonT: ${it.noonTime}")
 
-            Log.d("@dev", "sunrise: ${it.sunriseAngle}   sunset: ${it.sunsetAngle}   " +
-                    "noonAngle: ${it.noonAngle}")
+            Log.d("@dev", "sunriseA: ${it.sunriseAngle}   sunsetA: ${it.sunsetAngle}   " +
+                    "noonA: ${it.noonAngle}")
 
             viewController.updateCanvas(sunPathDataModel)
         }
