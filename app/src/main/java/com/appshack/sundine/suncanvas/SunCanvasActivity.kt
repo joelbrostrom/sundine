@@ -4,8 +4,9 @@ import android.app.Activity
 import android.os.Bundle
 import com.appshack.sundine.R
 import com.appshack.sundine.extensions.toast
+import com.appshack.sundine.interfaces.SunCanvasMVP
 import com.appshack.sundine.network.responsemodels.SunPathDataModel
-import kotlinx.android.synthetic.main.sun_canvas.*
+import kotlinx.android.synthetic.main.activity_sun_canvas.*
 
 
 /**
@@ -15,11 +16,17 @@ import kotlinx.android.synthetic.main.sun_canvas.*
 class SunCanvasActivity : Activity(), SunCanvasMVP.View {
 
     private val sunCanvasPresenter = SunCanvasPresenter(this)
+    lateinit var sunPath: LinkedHashMap<String, SunPathDataModel>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.sun_canvas)
-        sunCanvasPresenter.getSunHeightPosition()
+        setContentView(R.layout.activity_sun_canvas)
+
+        sunPath = sunCanvasPresenter.getSunPaths()
+
+        reloadButton.setOnClickListener { updateCanvas(sunPath) }
+
+        updateCanvas(sunPath)
     }
 
     override fun toastMessage(message: String) {
@@ -28,9 +35,9 @@ class SunCanvasActivity : Activity(), SunCanvasMVP.View {
         }
     }
 
-    override fun updateCanvas(sunPathDataModel: SunPathDataModel) {
+    private fun updateCanvas(sunPathDataModels: LinkedHashMap<String, SunPathDataModel>) {
         runOnUiThread {
-            sun_canvas_view.updateCanvas(sunPathDataModel)
+            sun_canvas_view.updateCanvas(sunPathDataModels)
             sun_canvas_view.invalidate()
         }
     }

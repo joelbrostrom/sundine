@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/maxHeightLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:drawableStart="@color/yellow"
+        android:background="@color/yellow"
+        android:layout_marginStart="@dimen/grid_1x"
+        android:text="Max height"/>
+
+    <TextView
+        android:layout_below="@id/maxHeightLabel"
+        android:id="@+id/minHeightLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white"
+        android:background="@color/red"
+        android:drawableStart="@color/red"
+        android:layout_marginStart="@dimen/grid_1x"
+        android:text="Current height"/>
+
+    <TextView
+        android:layout_below="@id/minHeightLabel"
+        android:id="@+id/currentHeightLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white"
+        android:background="@color/blue"
+        android:drawableStart="@color/blue"
+        android:layout_marginStart="@dimen/grid_1x"
+        android:text="Min height"/>
+
+    <com.appshack.sundine.suncanvas.SunCanvasView
+        android:id="@+id/sun_canvas_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/grid_2x"
+        android:layout_centerInParent="true" />
+
+    <Button
+        android:id="@+id/reloadButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/grid_2x"
+        android:text="RELOAD LAYOUT"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
+
+</RelativeLayout>

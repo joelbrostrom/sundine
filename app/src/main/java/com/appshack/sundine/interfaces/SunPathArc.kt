@@ -20,5 +20,5 @@ interface SunPathArc {
     var noonzenit: Float
 
     var widthFraction: Double
-    var heightFraction: Double
+    //var heightFraction: Double
 }

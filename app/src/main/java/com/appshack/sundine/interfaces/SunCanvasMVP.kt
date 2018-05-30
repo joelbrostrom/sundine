@@ -1,4 +1,4 @@
-package com.appshack.sundine.suncanvas
+package com.appshack.sundine.interfaces
 
 import com.appshack.sundine.network.responsemodels.SunPathDataModel
 
@@ -11,11 +11,10 @@ import com.appshack.sundine.network.responsemodels.SunPathDataModel
 interface SunCanvasMVP {
 
     interface View {
-        fun updateCanvas(sunPathDataModel: SunPathDataModel)
         fun toastMessage(message: String)
     }
 
     interface Presenter {
-        fun getSunHeightPosition()
+        fun getSunPaths():Map<String, SunPathDataModel>
     }
 }

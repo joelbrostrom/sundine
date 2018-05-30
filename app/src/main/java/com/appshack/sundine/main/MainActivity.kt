@@ -11,6 +11,10 @@ import com.appshack.sundine.R
 import com.appshack.sundine.interfaces.MapInterface
 import com.appshack.sundine.enums.PermissionCodes
 import com.appshack.sundine.extensions.debugTrace
+import com.appshack.sundine.extensions.toast
+import com.appshack.sundine.interfaces.SunCanvasMVP
+import com.appshack.sundine.network.responsemodels.SunPathDataModel
+import com.appshack.sundine.suncanvas.SunCanvasPresenter
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.location.*
@@ -21,8 +25,9 @@ import com.google.android.gms.maps.MapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.OnCompleteListener
+import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : FragmentActivity(), MapInterface {
+class MainActivity : FragmentActivity(), MapInterface, SunCanvasMVP.View {
 
     /**
      *  gMap: The visible map you see
@@ -38,6 +43,8 @@ class MainActivity : FragmentActivity(), MapInterface {
     private lateinit var mPlaceDetectionClient: PlaceDetectionClient
     private lateinit var mGoogleApiClient: GoogleApiClient
     private lateinit var mLocationRequest: LocationRequest
+    private val sunCanvasPresenter = SunCanvasPresenter(this)
+    lateinit var sunPaths: LinkedHashMap<String, SunPathDataModel>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,6 +61,10 @@ class MainActivity : FragmentActivity(), MapInterface {
         mGoogleApiClient = mClient
 
         mLocationRequest = mIntervalFast
+
+        sunPaths = sunCanvasPresenter.getSunPaths()
+
+        updateCanvas(sunPaths)
 
         /**
          * Call getMapAsync to get a google map.
@@ -76,6 +87,13 @@ class MainActivity : FragmentActivity(), MapInterface {
         if (mGoogleApiClient.isConnected) {
             fusedLocationClient.removeLocationUpdates(locationCallback)
             mGoogleApiClient.disconnect()
+        }
+    }
+
+    private fun updateCanvas(sunPathDataModels: LinkedHashMap<String, SunPathDataModel>) {
+        runOnUiThread {
+            sun_canvas_map_view.updateCanvas(sunPathDataModels)
+            sun_canvas_map_view.invalidate()
         }
     }
 
@@ -166,6 +184,10 @@ class MainActivity : FragmentActivity(), MapInterface {
             Log.i(debugTrace(), "Location services connection failed with code ${p0.errorMessage}")
         }
 
+    }
+
+    override fun toastMessage(message: String) {
+        toast(message)
     }
 
     private val newLocationCallback: LocationCallback = object : LocationCallback() {
