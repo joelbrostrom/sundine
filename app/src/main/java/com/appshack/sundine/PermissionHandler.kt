@@ -18,7 +18,7 @@ import com.karumi.dexter.listener.multi.MultiplePermissionsListener
  * Developed by App Shack
  */
 
-class PermissionHandler(private val activity: Activity,private val requiredPermissions: List<String>, val callBack: ((Unit) -> Unit)) {
+class PermissionHandler(private val activity: Activity, private val requiredPermissions: List<String>, val callBack: ((Unit) -> Unit)) {
 
     fun checkPermission() {
         Dexter.withActivity(activity)
@@ -45,10 +45,10 @@ class PermissionHandler(private val activity: Activity,private val requiredPermi
                 .check()
     }
 
-   private fun openSettingsDialog(title: String,
-                          message: String,
-                          positiveButton: String = "Open Settings",
-                          negativeButton: String = "Dismiss") {
+    private fun openSettingsDialog(title: String,
+                                   message: String,
+                                   positiveButton: String = "Open Settings",
+                                   negativeButton: String = "Dismiss") {
 
 
         AlertDialog.Builder(activity)

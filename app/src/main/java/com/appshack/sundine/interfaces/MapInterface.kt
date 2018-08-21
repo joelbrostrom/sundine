@@ -9,7 +9,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
  * Developed by App Shack
  */
 
-interface MapInterface: GoogleApiClient.ConnectionCallbacks,
+interface MapInterface : GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener,
         OnMapReadyCallback {

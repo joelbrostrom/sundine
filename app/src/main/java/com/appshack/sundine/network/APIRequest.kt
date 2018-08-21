@@ -19,6 +19,7 @@ enum class MediaTypeEnum(val type: MediaType) {
     FORM_DATA(MediaType.parse("multipart/form-data")!!),
     IMG(MediaType.parse("image/png")!!)
 }
+
 interface HttpRequest {
     val path: HttpUrl
     val method: HTTPMethod

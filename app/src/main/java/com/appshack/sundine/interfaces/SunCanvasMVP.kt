@@ -1,6 +1,7 @@
 package com.appshack.sundine.interfaces
 
 import com.appshack.sundine.network.responsemodels.SunPathDataModel
+import com.google.android.gms.maps.model.CameraPosition
 
 
 /**
@@ -15,6 +16,6 @@ interface SunCanvasMVP {
     }
 
     interface Presenter {
-        fun getSunPaths():Map<String, SunPathDataModel>
+        fun getSunPaths(cameraPosition: CameraPosition): Map<String, SunPathDataModel>
     }
 }

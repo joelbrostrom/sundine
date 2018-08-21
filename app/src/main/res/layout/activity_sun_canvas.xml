@@ -10,7 +10,7 @@
         android:drawableStart="@color/yellow"
         android:background="@color/yellow"
         android:layout_marginStart="@dimen/grid_1x"
-        android:text="Max height"/>
+        android:text="Max height" />
 
     <TextView
         android:layout_below="@id/maxHeightLabel"
@@ -21,7 +21,7 @@
         android:background="@color/red"
         android:drawableStart="@color/red"
         android:layout_marginStart="@dimen/grid_1x"
-        android:text="Current height"/>
+        android:text="Current height" />
 
     <TextView
         android:layout_below="@id/minHeightLabel"
@@ -32,7 +32,7 @@
         android:background="@color/blue"
         android:drawableStart="@color/blue"
         android:layout_marginStart="@dimen/grid_1x"
-        android:text="Min height"/>
+        android:text="Min height" />
 
     <com.appshack.sundine.suncanvas.SunCanvasView
         android:id="@+id/sun_canvas_view"

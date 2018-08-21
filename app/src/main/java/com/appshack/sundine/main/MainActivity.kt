@@ -8,10 +8,10 @@ import android.support.v4.content.PermissionChecker
 import android.util.Log
 import com.appshack.sundine.PermissionHandler
 import com.appshack.sundine.R
-import com.appshack.sundine.interfaces.MapInterface
 import com.appshack.sundine.enums.PermissionCodes
 import com.appshack.sundine.extensions.debugTrace
 import com.appshack.sundine.extensions.toast
+import com.appshack.sundine.interfaces.MapInterface
 import com.appshack.sundine.interfaces.SunCanvasMVP
 import com.appshack.sundine.network.responsemodels.SunPathDataModel
 import com.appshack.sundine.suncanvas.SunCanvasPresenter
@@ -32,7 +32,7 @@ class MainActivity : FragmentActivity(), MapInterface, SunCanvasMVP.View {
     /**
      *  gMap: The visible map you see
      *  isResumed: Used to set location only if its the first location since resumed activity
-     *  fusedLocationProviderClient: Googles version of locationClient. Used to fetch location data
+     *  fusedLocationProviderClient: Google version of locationClient. Used to fetch location data
      *  googleApiClient: Handles api connections, most importantly connect and disconnect
      *  LocationRequest: Callback function passed when fetching data with fusedLocationProviderClient
      */
@@ -44,7 +44,6 @@ class MainActivity : FragmentActivity(), MapInterface, SunCanvasMVP.View {
     private lateinit var mGoogleApiClient: GoogleApiClient
     private lateinit var mLocationRequest: LocationRequest
     private val sunCanvasPresenter = SunCanvasPresenter(this)
-    lateinit var sunPaths: LinkedHashMap<String, SunPathDataModel>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,10 +61,6 @@ class MainActivity : FragmentActivity(), MapInterface, SunCanvasMVP.View {
 
         mLocationRequest = mIntervalFast
 
-        sunPaths = sunCanvasPresenter.getSunPaths()
-
-        updateCanvas(sunPaths)
-
         /**
          * Call getMapAsync to get a google map.
          * This call will return a GoogleMap in onMapReady, which we implement from OnMapReadyCallback
@@ -77,7 +72,6 @@ class MainActivity : FragmentActivity(), MapInterface, SunCanvasMVP.View {
     override fun onResume() {
         super.onResume()
         isResumed = true
-//      setupMapIfNeeded()
         mGoogleApiClient.connect()
     }
 
@@ -87,13 +81,6 @@ class MainActivity : FragmentActivity(), MapInterface, SunCanvasMVP.View {
         if (mGoogleApiClient.isConnected) {
             fusedLocationClient.removeLocationUpdates(locationCallback)
             mGoogleApiClient.disconnect()
-        }
-    }
-
-    private fun updateCanvas(sunPathDataModels: LinkedHashMap<String, SunPathDataModel>) {
-        runOnUiThread {
-            sun_canvas_map_view.updateCanvas(sunPathDataModels)
-            sun_canvas_map_view.invalidate()
         }
     }
 
@@ -115,8 +102,8 @@ class MainActivity : FragmentActivity(), MapInterface, SunCanvasMVP.View {
     }
 
     private fun filterFoodPlaces(likelyPlaces: PlaceLikelihoodBufferResponse): List<PlaceLikelihood> {
-        return likelyPlaces.filter {
-            it.place.placeTypes.any {
+        return likelyPlaces.filter { placeLikelihood ->
+            placeLikelihood.place.placeTypes.any {
                 it == Place.TYPE_RESTAURANT ||
                         it == Place.TYPE_CAFE ||
                         it == Place.TYPE_BAR
@@ -126,18 +113,29 @@ class MainActivity : FragmentActivity(), MapInterface, SunCanvasMVP.View {
 
     override fun onMapReady(googleMap: GoogleMap?) {
 
-        val permissionHandler = PermissionHandler(this, listOf(Manifest.permission.ACCESS_FINE_LOCATION), {
+        val permissionHandler = PermissionHandler(this, listOf(Manifest.permission.ACCESS_FINE_LOCATION)) {
             if (PermissionChecker.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PermissionChecker.PERMISSION_GRANTED) {
-                googleMap?.let {
+                googleMap?.let { googleMap ->
                     gMap = googleMap
                     gMap.isMyLocationEnabled = true
-
+                    gMap.setOnCameraIdleListener {
+                        updateCanvas(sunCanvasPresenter.getSunPaths(gMap.cameraPosition))
+                    }
                 }
             }
-        })
+        }
 
         permissionHandler.checkPermission()
 
+    }
+
+    private fun updateCanvas(sunPathDataModels: LinkedHashMap<String, SunPathDataModel>) {
+
+        runOnUiThread {
+            //sunPathDataModels.forEach { setupCanvasArcData(it) }
+            sun_canvas_map_view.updateCanvas(sunPathDataModels)
+            sun_canvas_map_view.invalidate()
+        }
     }
 
     override fun onLocationChanged(p0: Location?) {
@@ -153,27 +151,27 @@ class MainActivity : FragmentActivity(), MapInterface, SunCanvasMVP.View {
         location?.let {
             if (isResumed) {
                 val latLng = LatLng(it.latitude, it.longitude)
-                val cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 14f)
+                val cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 6f)
                 getNearbyPlaces()
                 gMap.animateCamera(cameraUpdate)
                 isResumed = false
             }
+
         }
-        Log.d(debugTrace(), location.toString())
     }
 
     override fun onConnected(p0: Bundle?) {
-        PermissionHandler(this, listOf(Manifest.permission.ACCESS_FINE_LOCATION), {
+        PermissionHandler(this, listOf(Manifest.permission.ACCESS_FINE_LOCATION)) {
 
             if (PermissionChecker.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PermissionChecker.PERMISSION_GRANTED) {
 
                 val mLastLocation = fusedLocationClient.lastLocation
-                mLastLocation.addOnCompleteListener { handleNewLocation(it.result) }
+                mLastLocation.addOnCompleteListener { task -> handleNewLocation(task.result) }
 
                 fusedLocationClient.requestLocationUpdates(mLocationRequest, newLocationCallback, null)
 
             }
-        }).checkPermission()
+        }.checkPermission()
 
     }
 
@@ -208,7 +206,7 @@ class MainActivity : FragmentActivity(), MapInterface, SunCanvasMVP.View {
 
         addMarkers(foodPlaces)
         //foodPlaces.forEach { Log.i(debugTrace(), "[Place/Likelihood/Types]:   ${it.place.name} : ${it.likelihood} : ${it.place.placeTypes}\n") }
-        likelyPlaces.forEach { Log.i(debugTrace(), "[Place/Likelihood/Types]:   ${it.place.name} : ${it.likelihood} : ${it.place.placeTypes}") }
+        //likelyPlaces.forEach { Log.i(debugTrace(), "[Place/Likelihood/Types]:   ${it.place.name} : ${it.likelihood} : ${it.place.placeTypes}") }
         likelyPlaces.release()
     }
 
@@ -225,7 +223,7 @@ class MainActivity : FragmentActivity(), MapInterface, SunCanvasMVP.View {
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build()
-        set(value) = Unit
+        set(_) = Unit
 
     private val mIntervalFast = LocationRequest.create()
             .setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY)

@@ -19,6 +19,8 @@ class PaintFactory(private val context: Context) {
             PaintType.BLACK_STROKE -> blackStroke
             PaintType.BLACK_STROKE_THICK -> blackStrokeThick
             PaintType.GREEN_STROKE -> greenStroke
+            PaintType.BLUE_STROKE -> blueStroke
+            PaintType.BLUE_STROKE_THIN -> blueStrokeThin
             PaintType.PINK_FILL -> pinkFill
             PaintType.YELLOW_FILL_TRANS -> yellowFillTrans
             PaintType.BLUE_FILL_TRANS -> blueFillTrans
@@ -31,6 +33,8 @@ class PaintFactory(private val context: Context) {
         BLACK_STROKE(),
         BLACK_STROKE_THICK(),
         GREEN_STROKE(),
+        BLUE_STROKE(),
+        BLUE_STROKE_THIN(),
         PINK_FILL(),
         YELLOW_FILL_TRANS(),
         BLUE_FILL_TRANS(),
@@ -53,7 +57,6 @@ class PaintFactory(private val context: Context) {
 
             return p
         }
-
 
     private val blackStrokeThick: Paint
         get() {
@@ -83,13 +86,40 @@ class PaintFactory(private val context: Context) {
             return p
         }
 
+    private val blueStroke: Paint
+        get() {
+            val p = Paint()
+            p.isAntiAlias = true
+            p.color = ContextCompat.getColor(context, R.color.blue)
+            p.style = Paint.Style.STROKE
+            p.strokeWidth = 5f
+            p.alpha = 0xFF
+            p.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_OVER)
+
+            return p
+        }
+
+    private val blueStrokeThin: Paint
+        get() {
+            val p = Paint()
+            p.isAntiAlias = true
+            p.color = ContextCompat.getColor(context, R.color.blue)
+            p.style = Paint.Style.FILL
+            p.strokeWidth = 1f
+            p.alpha = 0xFF
+            p.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_OVER)
+
+
+            return p
+        }
+
     private val pinkFill: Paint
         get() {
             val p = Paint()
             p.isAntiAlias = true
-            p.color = ContextCompat.getColor(context, R.color.pink)
+            p.color = ContextCompat.getColor(context, R.color.red)
             p.style = Paint.Style.FILL
-            p.strokeWidth = 5f
+            p.strokeWidth = 10f
             p.alpha = 0xFF
             p.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_OVER)
 
