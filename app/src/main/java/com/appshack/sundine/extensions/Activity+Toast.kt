@@ -9,7 +9,7 @@ import android.widget.Toast
  * Developed by App Shack
  */
 
-fun Activity.toast(message: String){
+fun Activity.toast(message: String) {
     runOnUiThread {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
