@@ -54,14 +54,14 @@ class PermissionHandler(private val activity: Activity, private val requiredPerm
         AlertDialog.Builder(activity)
                 .setTitle(title)
                 .setMessage(message)
-                .setPositiveButton(positiveButton) { dialog, which ->
+                .setPositiveButton(positiveButton) { dialog, _ ->
                     val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
                     val uri = Uri.fromParts("package", activity.packageName, null)
                     intent.data = uri
                     activity.startActivityForResult(intent, PermissionCodes.OPEN_SETTINGS.id)
                     dialog.cancel()
                 }
-                .setNegativeButton(negativeButton) { dialog, which -> dialog.cancel() }
+                .setNegativeButton(negativeButton) { dialog, _ -> dialog.cancel() }
                 .show()
 
     }

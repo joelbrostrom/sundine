@@ -101,14 +101,14 @@ class MainActivity : FragmentActivity(), MapInterface, SunCanvasMVP.View {
         }
     }
 
-    private fun filterFoodPlaces(likelyPlaces: PlaceLikelihoodBufferResponse): List<PlaceLikelihood> {
-        return likelyPlaces.filter { placeLikelihood ->
+    private fun filterFoodPlaces(likelyPlaces: PlaceLikelihoodBufferResponse?): List<PlaceLikelihood> {
+        return likelyPlaces?.filter { placeLikelihood ->
             placeLikelihood.place.placeTypes.any {
                 it == Place.TYPE_RESTAURANT ||
                         it == Place.TYPE_CAFE ||
                         it == Place.TYPE_BAR
             }
-        }
+        } ?: listOf()
     }
 
     override fun onMapReady(googleMap: GoogleMap?) {
@@ -201,13 +201,13 @@ class MainActivity : FragmentActivity(), MapInterface, SunCanvasMVP.View {
 
     private val placeResultCompleteListener = OnCompleteListener<PlaceLikelihoodBufferResponse> {
 
-        val likelyPlaces: PlaceLikelihoodBufferResponse = it.result
+        val likelyPlaces: PlaceLikelihoodBufferResponse? = it.result
         val foodPlaces = filterFoodPlaces(likelyPlaces)
 
         addMarkers(foodPlaces)
         //foodPlaces.forEach { Log.i(debugTrace(), "[Place/Likelihood/Types]:   ${it.place.name} : ${it.likelihood} : ${it.place.placeTypes}\n") }
         //likelyPlaces.forEach { Log.i(debugTrace(), "[Place/Likelihood/Types]:   ${it.place.name} : ${it.likelihood} : ${it.place.placeTypes}") }
-        likelyPlaces.release()
+        likelyPlaces?.release()
     }
 
     private val locationResultCallback: LocationCallback = object : LocationCallback() {

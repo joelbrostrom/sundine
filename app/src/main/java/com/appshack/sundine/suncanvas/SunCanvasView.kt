@@ -15,9 +15,9 @@ import com.appshack.sundine.dataclasses.CanvasTextData
 import com.appshack.sundine.dataclasses.CelestialPoint
 import com.appshack.sundine.interfaces.ShapeInterface
 import com.appshack.sundine.network.responsemodels.SunPathDataModel
+import net.e175.klaus.solarpositioning.Grena3
 import java.text.SimpleDateFormat
 import java.util.*
-
 
 class SunCanvasView(context: Context, attributeSet: AttributeSet) : View(context, attributeSet) {
 
@@ -49,15 +49,16 @@ class SunCanvasView(context: Context, attributeSet: AttributeSet) : View(context
                 is CanvasArcData -> {
                     canvas?.drawArc(it.rectF, it.startAngle, it.sweepingAngle, it.fillCenter, it.paint)
                 }
+
                 is CanvasOval -> {
                     canvas?.drawOval(it.rectF, it.paint)
                 }
+
                 is CanvasTextData -> {
                     canvas?.drawText(it.string, it.xCord, it.yCord, it.paint)
                 }
             }
         }
-
     }
 
     private fun stackLayers(): MutableList<ShapeInterface> {
@@ -83,16 +84,11 @@ class SunCanvasView(context: Context, attributeSet: AttributeSet) : View(context
         canvasLayerList.addAll(digits)
 
         return canvasLayerList
-
     }
 
     fun updateCanvas(sunPathDataModels: LinkedHashMap<String, SunPathDataModel>) {
 
-        sunPathDataModels.forEach { sunPathDataModel ->
-
-            setupCanvasArcData(sunPathDataModel)
-
-        }
+        sunPathDataModels.forEach { setupCanvasArcData(it) }
 
         sunPathDataModels["summerPath"]?.let {
 
@@ -118,17 +114,15 @@ class SunCanvasView(context: Context, attributeSet: AttributeSet) : View(context
 
             sunPathDataModels.put(currentPositionMarker.name, currentPositionMarker)
         }
-
         canvasSunPathDataModels = sunPathDataModels
-
     }
 
     private fun setupCanvasArcData(sunPathDataModel: Map.Entry<String, SunPathDataModel>) {
         val sunPathModel = sunPathDataModel.value
 
-        val sunriseAngle = sunPathModel.sunrisePosition.azimuth
-        val sunsetAngle = sunPathModel.sunsetPosition.azimuth
-        val sweepingAngle = sunsetAngle - sunriseAngle
+        val sunriseAngle = sunPathModel.sunrisePosition.azimuth //angle of sun horizontal position
+        val sunsetAngle = sunPathModel.sunsetPosition.azimuth   //angle of sun horizontal position
+        val sweepingAngle = sunsetAngle - sunriseAngle          //degrees between sun rise and set
 
         val innerDiameter = RADIUS + RADIUS * sunPathModel.solarNoonPosition.getZenithMultiplier()
         val verticalPadding = (RADIUS * 2 - innerDiameter) * Math.sin(Math.toRadians(sunPathModel.cameraPosition.bearing.toDouble() / 2.0)).toFloat()
@@ -157,14 +151,22 @@ class SunCanvasView(context: Context, attributeSet: AttributeSet) : View(context
                 paint)
     }
 
-    private fun getFaceDigits(sunPathDataModel: SunPathDataModel): MutableList<CanvasTextData> {
+    private fun getFaceDigits(currentPositionModel: SunPathDataModel): MutableList<CanvasTextData> {
         val canvasTimeStamps = mutableListOf<CanvasTextData>()
+        val today = Date()
+        val dateWithTime = GregorianCalendar()
 
-        for (step in 0..23) {
+        for (hour in 0..23) {
 
-            val timeString = step.toString()
+            dateWithTime.set(today.year, today.month, today.day, hour, 0)
+            val azimuthZenithAngle = Grena3.calculateSolarPosition(
+                    dateWithTime,
+                    currentPositionModel.cameraPosition.target.latitude,
+                    currentPositionModel.cameraPosition.target.longitude,
+                    68.0)
+            val timeString = hour.toString()
             val innerRadius = (outerCircleRectF.bottom - outerCircleRectF.top) / 2
-            val angle = (step * 360f / 24).adjustAngleToTop().toDouble() - sunPathDataModel.cameraPosition.bearing
+            val angle = azimuthZenithAngle.azimuth.adjustAngleToTop() - currentPositionModel.cameraPosition.bearing//(hour * 360f / 24).adjustAngleToTop().toDouble() - currentPositionModel.cameraPosition.bearing
             val xCord = RADIUS + innerRadius * 1.15f * Math.cos(Math.toRadians(angle)).toFloat()
             val yCord = RADIUS + innerRadius * 1.15f * Math.sin(Math.toRadians(angle)).toFloat()
             val paint = paintFactory.getPaint(PaintFactory.PaintType.BLACK_STROKE)
@@ -174,22 +176,14 @@ class SunCanvasView(context: Context, attributeSet: AttributeSet) : View(context
             val canvasTextData = CanvasTextData(timeString, xCord, yCord, paint)
             canvasTimeStamps.add(canvasTextData)
         }
-
-//        val sunRiseSetCurrentTimeStamps = getRiseCurrentSetTime(sunPathDataModel)
-//
-//        canvasTimeStamps.addAll(sunRiseSetCurrentTimeStamps)
-
         return canvasTimeStamps
     }
 
     private fun getArcWithDifference(celestialPoint: CelestialPoint, innerRadius: Float): Float {
-
         val radiusDifference = RADIUS - innerRadius
-
         val widthDifference = radiusDifference * Math.cos(Math.toRadians(celestialPoint.azimuth.toDouble() + 90))
 
         return widthDifference.toFloat()
-
     }
 
     private fun getRiseCurrentSetTime(sunPathDataModel: SunPathDataModel?): List<CanvasTextData> {
@@ -213,13 +207,10 @@ class SunCanvasView(context: Context, attributeSet: AttributeSet) : View(context
                 canvasTimeStamps.add(CanvasTextData(time, xCord, yCord, paint))
 
             }
-
 //            Log.d("@dev drawTime", "Time: $timeToDraw   ${String.format("cos(%.0f): %.3f", angle, Math.cos(Math.toRadians(it.currentSolarPosition.azimuth.toDouble())))}   ${String.format("sin: %.3f", Math.sin(Math.toRadians(it.currentSolarPosition.azimuth.toDouble())).toFloat())}   X: ${xCord.roundToInt()}   y: ${yCord.roundToInt()}")
 //            canvas?.drawText(timeToDraw, xCord, yCord, paint)
-
         }
         return canvasTimeStamps
-
     }
 
     private fun setCanvasSize() {
@@ -227,12 +218,13 @@ class SunCanvasView(context: Context, attributeSet: AttributeSet) : View(context
         lp.width = SCREEN_WIDTH
         lp.height = SCREEN_WIDTH
         layoutParams = lp
-
     }
 
 }
 
-fun Float.adjustAngleToTop(): Float = this - 90f
+fun Float.adjustAngleToTop(): Float = this - 90
+
+fun Double.adjustAngleToTop(): Double = this - 90
 
 fun RectF.addPadding(padding: Int): RectF = RectF(
         this.left + padding,

@@ -1,13 +1,14 @@
 package com.appshack.sundine.suncanvas
 
+import android.util.Log
 import com.appshack.sundine.dataclasses.CelestialPoint
 import com.appshack.sundine.interfaces.SunCanvasMVP
 import com.appshack.sundine.network.responsemodels.SunPathDataModel
 import com.google.android.gms.maps.model.CameraPosition
 import net.e175.klaus.solarpositioning.Grena3
 import net.e175.klaus.solarpositioning.SPA
+import java.time.Instant
 import java.util.*
-
 
 /**
  * Created by joelbrostrom on 2018-05-21
@@ -35,11 +36,12 @@ class SunCanvasPresenter(val viewController: SunCanvasMVP.View) : SunCanvasMVP.P
         val summerPath = SunPathDataModel("summerPath", summerSolsticeCalendar, cameraPosition)
         val currentPath = SunPathDataModel("currentPath", nowCalendar, cameraPosition)
         val winterPath = SunPathDataModel("winterPath", winterSolsticeCalendar, cameraPosition)
+
         val sunPathDataModels: LinkedHashMap<String, SunPathDataModel> = linkedMapOf(
                 Pair(summerPath.name, summerPath),
                 Pair(currentPath.name, currentPath),
                 Pair(winterPath.name, winterPath))
-
+        Log.d("@dev getSunPath", "local time: $currentDate")
         return setupSunPathModel(sunPathDataModels)
 
     }
@@ -62,7 +64,6 @@ class SunCanvasPresenter(val viewController: SunCanvasMVP.View) : SunCanvasMVP.P
             mapEntry.value.solarNoonPosition = setUpCelestialPoint(sunTransit[1], cameraPosition)
 
             mapEntry.value.sunsetPosition = setUpCelestialPoint(sunTransit[2], cameraPosition)
-
 
 //            Log.d("@dev solarRise", "${sunTransit[0].time}$azimuthZenithAngleRise")
 //            Log.d("@dev solarNoon", "${sunTransit[1].time}$azimuthZenithAngleNoon")
@@ -90,7 +91,6 @@ class SunCanvasPresenter(val viewController: SunCanvasMVP.View) : SunCanvasMVP.P
 
         } ?: CelestialPoint(Date(0), 360f, 90f)
     }
-
 
 }
 

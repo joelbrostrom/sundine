@@ -13,7 +13,7 @@ fun Activity.debugTrace(): String {
     val fullClassName = stackTrace.className
     val classname = fullClassName.substring(fullClassName.lastIndexOf(".") + 1)
     val functionName = stackTrace.methodName
-    val lineNumber = stackTrace.className //add if needed
+   // val lineNumber = stackTrace.className //add if needed
 
     return "@dev $classname::$functionName"
 }
