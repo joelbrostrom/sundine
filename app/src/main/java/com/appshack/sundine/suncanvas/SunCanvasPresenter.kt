@@ -14,7 +14,7 @@ import java.util.*
  * Created by joelbrostrom on 2018-05-21
  * Developed by App Shack
  */
-class SunCanvasPresenter(val viewController: SunCanvasMVP.View) : SunCanvasMVP.Presenter {
+class SunCanvasPresenter(val view: SunCanvasMVP.View) : SunCanvasMVP.Presenter {
 
     private val ESTIMATED_DELTA_T = 68.0
 
@@ -41,7 +41,7 @@ class SunCanvasPresenter(val viewController: SunCanvasMVP.View) : SunCanvasMVP.P
                 Pair(summerPath.name, summerPath),
                 Pair(currentPath.name, currentPath),
                 Pair(winterPath.name, winterPath))
-        Log.d("@dev getSunPath", "local time: $currentDate")
+        Log.d("@dev getSunPath", "local time: ${nowCalendar.time}")
         return setupSunPathModel(sunPathDataModels)
 
     }

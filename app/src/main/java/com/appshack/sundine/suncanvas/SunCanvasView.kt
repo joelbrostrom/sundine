@@ -120,9 +120,9 @@ class SunCanvasView(context: Context, attributeSet: AttributeSet) : View(context
     private fun setupCanvasArcData(sunPathDataModel: Map.Entry<String, SunPathDataModel>) {
         val sunPathModel = sunPathDataModel.value
 
-        val sunriseAngle = sunPathModel.sunrisePosition.azimuth //angle of sun horizontal position
-        val sunsetAngle = sunPathModel.sunsetPosition.azimuth   //angle of sun horizontal position
-        val sweepingAngle = sunsetAngle - sunriseAngle          //degrees between sun rise and set
+        val sunriseAngle = sunPathModel.sunrisePosition.azimuth //angle of sunrise horizontal position
+        val sunsetAngle = sunPathModel.sunsetPosition.azimuth   //angle of sunsets horizontal position
+        val sweepingAngle = sunsetAngle - sunriseAngle          //degrees between sunrise and sunset
 
         val innerDiameter = RADIUS + RADIUS * sunPathModel.solarNoonPosition.getZenithMultiplier()
         val verticalPadding = (RADIUS * 2 - innerDiameter) * Math.sin(Math.toRadians(sunPathModel.cameraPosition.bearing.toDouble() / 2.0)).toFloat()
@@ -153,12 +153,13 @@ class SunCanvasView(context: Context, attributeSet: AttributeSet) : View(context
 
     private fun getFaceDigits(currentPositionModel: SunPathDataModel): MutableList<CanvasTextData> {
         val canvasTimeStamps = mutableListOf<CanvasTextData>()
-        val today = Date()
-        val dateWithTime = GregorianCalendar()
+        val year = currentPositionModel.gregorianCalendar.get(Calendar.YEAR)
+        val month = currentPositionModel.gregorianCalendar.get(Calendar.MONTH)
+        val day = currentPositionModel.gregorianCalendar.get(Calendar.DAY_OF_MONTH)
 
         for (hour in 0..23) {
-
-            dateWithTime.set(today.year, today.month, today.day, hour, 0)
+            val dateWithTime = GregorianCalendar()
+            dateWithTime.set(year, month, day, hour,0)
             val azimuthZenithAngle = Grena3.calculateSolarPosition(
                     dateWithTime,
                     currentPositionModel.cameraPosition.target.latitude,
@@ -166,12 +167,13 @@ class SunCanvasView(context: Context, attributeSet: AttributeSet) : View(context
                     68.0)
             val timeString = hour.toString()
             val innerRadius = (outerCircleRectF.bottom - outerCircleRectF.top) / 2
-            val angle = azimuthZenithAngle.azimuth.adjustAngleToTop() - currentPositionModel.cameraPosition.bearing//(hour * 360f / 24).adjustAngleToTop().toDouble() - currentPositionModel.cameraPosition.bearing
+            val angle = azimuthZenithAngle.azimuth.adjustAngleToTop() - currentPositionModel.cameraPosition.bearing
             val xCord = RADIUS + innerRadius * 1.15f * Math.cos(Math.toRadians(angle)).toFloat()
             val yCord = RADIUS + innerRadius * 1.15f * Math.sin(Math.toRadians(angle)).toFloat()
             val paint = paintFactory.getPaint(PaintFactory.PaintType.BLACK_STROKE)
-            paint.textSize = 40f
             paint.textAlign = Paint.Align.CENTER
+            paint.textSize = 40f
+
 
             val canvasTextData = CanvasTextData(timeString, xCord, yCord, paint)
             canvasTimeStamps.add(canvasTextData)
