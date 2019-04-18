@@ -19,9 +19,22 @@ class SunCanvasPresenter(val viewController: SunCanvasMVP.View) : SunCanvasMVP.P
 
     override fun getSunPaths(cameraPosition: CameraPosition): LinkedHashMap<String, SunPathDataModel> {
 
-        val summerPath = SunPathDataModel("summerPath", Date(2018, 5, 21), cameraPosition)
-        val currentPath = SunPathDataModel("currentPath", Date(), cameraPosition)
-        val winterPath = SunPathDataModel("winterPath", Date(2018, 11, 21), cameraPosition)
+        val now = Date()
+        val nowCalendar = GregorianCalendar().apply {
+            time = now
+        }
+        val summerSolsticeCalendar = GregorianCalendar().apply {
+            time = now
+            set(nowCalendar.get(Calendar.YEAR), 5, 21)
+        }
+        val winterSolsticeCalendar = GregorianCalendar().apply {
+            time = now
+            set(nowCalendar.get(Calendar.YEAR), 5, 21)
+        }
+
+        val summerPath = SunPathDataModel("summerPath", summerSolsticeCalendar, cameraPosition)
+        val currentPath = SunPathDataModel("currentPath", nowCalendar, cameraPosition)
+        val winterPath = SunPathDataModel("winterPath", winterSolsticeCalendar, cameraPosition)
         val sunPathDataModels: LinkedHashMap<String, SunPathDataModel> = linkedMapOf(
                 Pair(summerPath.name, summerPath),
                 Pair(currentPath.name, currentPath),
@@ -35,17 +48,14 @@ class SunCanvasPresenter(val viewController: SunCanvasMVP.View) : SunCanvasMVP.P
 
         sunPathDataModels.forEach { mapEntry ->
             val cameraPosition = mapEntry.value.cameraPosition
-            val calendar = GregorianCalendar()
-
-            calendar.time = mapEntry.value.Date
 
             val sunTransit = SPA.calculateSunriseTransitSet(
-                    calendar,
+                    mapEntry.value.gregorianCalendar,
                     cameraPosition.target.latitude,
                     cameraPosition.target.longitude,
                     ESTIMATED_DELTA_T)
 
-            mapEntry.value.currentSolarPosition = setUpCelestialPoint(calendar, cameraPosition)
+            mapEntry.value.currentSolarPosition = setUpCelestialPoint(mapEntry.value.gregorianCalendar, cameraPosition)
 
             mapEntry.value.sunrisePosition = setUpCelestialPoint(sunTransit[0], cameraPosition)
 
