@@ -96,7 +96,7 @@ class SunCanvasView(context: Context, attributeSet: AttributeSet) : View(context
 
         sunPathDataModels["summerPath"]?.let {
 
-            val cuttingPath = SunPathDataModel("cuttingPath", it.Date, it.cameraPosition)
+            val cuttingPath = SunPathDataModel("cuttingPath", it.gregorianCalendar, it.cameraPosition)
 
             cuttingPath.canvasArcData = CanvasArcData(
                     it.canvasArcData.rectF,
@@ -108,7 +108,7 @@ class SunCanvasView(context: Context, attributeSet: AttributeSet) : View(context
         }
 
         sunPathDataModels["currentPath"]?.let {
-            val currentPositionMarker = SunPathDataModel("currentPositionMarker", it.Date, it.cameraPosition)
+            val currentPositionMarker = SunPathDataModel("currentPositionMarker", it.gregorianCalendar, it.cameraPosition)
             currentPositionMarker.canvasArcData = CanvasArcData(
                     outerCircleRectF,
                     it.currentSolarPosition.azimuth.adjustAngleToTop() - it.cameraPosition.bearing - 2f,

@@ -5,7 +5,7 @@ import com.appshack.sundine.dataclasses.CelestialPoint
 import com.google.android.gms.maps.model.CameraPosition
 import java.util.*
 
-data class SunPathDataModel(val name: String, val Date: Date, val cameraPosition: CameraPosition) {
+data class SunPathDataModel(val name: String, val gregorianCalendar: GregorianCalendar, val cameraPosition: CameraPosition) {
 
     lateinit var sunrisePosition: CelestialPoint
     lateinit var solarNoonPosition: CelestialPoint
